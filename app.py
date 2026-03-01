@@ -4,7 +4,6 @@ import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
-import onnxruntime as ort
 from sklearn.metrics import (classification_report, confusion_matrix, roc_auc_score)
 import tensorflow as tf
 from tensorflow import keras
@@ -202,7 +201,19 @@ h1, h2, h3 { font-family: 'Syne', sans-serif !important; }
 # ══════════════════════════════════════════════════════════════════
 @st.cache_resource
 def load_artifacts():
-    session = ort.InferenceSession('ann_model.onnx')
+    model   = keras.models.load_model("ann_model.h5", compile=False)
+    scaler  = joblib.load("scaler.pkl")
+
+    with open("metrics.json") as f:
+        metrics = json.load(f)
+
+    with open("training_history.json") as f:
+        history = json.load(f)
+
+    with open("features.json") as f:
+        features = json.load(f)
+
+    return model, scaler, metrics, history, features
     scaler  = joblib.load('scaler.pkl')
     with open('metrics.json')          as f: metrics  = json.load(f)
     with open('training_history.json') as f: history  = json.load(f)
@@ -217,7 +228,7 @@ def load_train_test_data():
             test_npz['X_test'],   test_npz['y_test'])
 
 with st.spinner("🛡️ Launching UPI Fraud Shield..."):
-    session, scaler, metrics, history, FEATURES = load_artifacts()
+    base_model, scaler, metrics, history, FEATURES = load_artifacts()
     X_train_ready, y_train_ready, X_test_ready, y_test_ready = load_train_test_data()
 
 
@@ -239,7 +250,7 @@ with st.sidebar:
     st.divider()
     st.markdown("**📦 Base Model**")
     st.caption(f"🧠 Architecture  : 4-Layer ANN")
-    st.caption(f"⚡ Runtime       : ONNX (Fast)")
+    st.caption(f"⚡ Runtime       : TensorFlow (Keras)")
     st.caption(f"📊 ROC-AUC       : {metrics['roc_auc']:.4f}")
     st.caption(f"🔢 Features      : {len(FEATURES)}")
     st.caption(f"📁 Dataset       : PaySim Synthetic")
@@ -265,14 +276,11 @@ PLOTLY_BASE = dict(
     margin=dict(t=50, b=30, l=20, r=20)
 )
 
-def onnx_predict(sess, feat_scaled):
-    inp = sess.get_inputs()[0].name
-    out = sess.get_outputs()[0].name
-    return sess.run([out], {inp: feat_scaled.astype(np.float32)})[0][0][0]
 
 def predict_transaction(amount, old_bal_orig, new_bal_orig,
-                         old_bal_dest, new_bal_dest, txn_type):
-    feat = np.array([[
+                        old_bal_dest, new_bal_dest, txn_type):
+
+    feat = np.array([[ 
         amount, old_bal_orig, new_bal_orig, old_bal_dest, new_bal_dest,
         new_bal_orig + amount - old_bal_orig,
         old_bal_dest + amount - new_bal_dest,
@@ -282,14 +290,20 @@ def predict_transaction(amount, old_bal_orig, new_bal_orig,
         new_bal_dest - old_bal_dest,
         1 if txn_type == 'TRANSFER' else 0
     ]])
-    feat_sc   = scaler.transform(feat).astype(np.float32)
-    threshold = st.session_state.get('tuned_threshold', 0.5)
-    if 'tuned_keras_model' in st.session_state:
-        prob = float(st.session_state['tuned_keras_model'].predict(feat_sc, verbose=0)[0][0])
-    else:
-        prob = float(onnx_predict(session, feat_sc))
-    return prob, threshold
 
+    feat_sc = scaler.transform(feat).astype(np.float32)
+    threshold = st.session_state.get('tuned_threshold', 0.5)
+
+    # Use tuned model if exists
+    if 'tuned_keras_model' in st.session_state:
+        prob = float(
+            st.session_state['tuned_keras_model']
+            .predict(feat_sc, verbose=0)[0][0]
+        )
+    else:
+        prob = float(base_model.predict(feat_sc, verbose=0)[0][0])
+
+    return prob, threshold
 def build_custom_ann(n1, n2, n3, d1, d2, d3, lr, use_bn):
     m = keras.Sequential(name='Tuned_ANN')
     m.add(layers.Input(shape=(len(FEATURES),)))
@@ -410,7 +424,7 @@ elif page == "🔍 Fraud Detector":
         <p>Enter transaction details · Get instant AI-powered fraud assessment</p>
     </div>""", unsafe_allow_html=True)
 
-    active_label = "🆕 Tuned Model" if 'tuned_keras_model' in st.session_state else "📦 Base ONNX Model"
+    active_label = "🆕 Tuned Model" if 'tuned_keras_model' in st.session_state else "📦 Base TensorFlow Model"
     st.info(f"**Active Model:** {active_label} · Train a custom model in ⚙️ Hypertune")
 
     col1, col2 = st.columns([1, 1], gap="large")
@@ -933,3 +947,4 @@ elif page == "📈 Insights":
         st.warning("💸 **High-Risk Threshold**\n\nTransactions above ₹2,00,000 show 3× higher fraud probability. Flag for secondary verification.")
     with c3:
         st.error("🔄 **Zero-Balance Pattern**\n\nIf sender balance hits ₹0 after a TRANSFER, fraud probability exceeds 85%. Auto-block recommended.")
+
