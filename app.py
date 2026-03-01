@@ -399,11 +399,11 @@ if page == "🏠 Dashboard":
                         labels=dict(x='Predicted', y='Actual'))
         fig.update_layout(**PLOTLY_BASE)
 
-fig.update_layout(
-    title='🎯 Confusion Matrix',
-    height=340,
-    font=dict(size=14)
-)
+        fig.update_layout(
+        title='🎯 Confusion Matrix',
+        height=340,
+        font=dict(size=14)
+        )
         st.plotly_chart(fig, use_container_width=True)
 
     with col2:
@@ -957,5 +957,6 @@ elif page == "📈 Insights":
         st.warning("💸 **High-Risk Threshold**\n\nTransactions above ₹2,00,000 show 3× higher fraud probability. Flag for secondary verification.")
     with c3:
         st.error("🔄 **Zero-Balance Pattern**\n\nIf sender balance hits ₹0 after a TRANSFER, fraud probability exceeds 85%. Auto-block recommended.")
+
 
 
