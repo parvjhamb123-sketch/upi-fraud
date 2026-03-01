@@ -70,32 +70,38 @@ html, body, [class*="css"] {
     font-size: 0.95rem !important;
     font-weight: 300;
 }
+
+/* FIX: Metric cards — smaller font so numbers don't get clipped */
 .metric-card {
     background: #0d1424;
     border: 1px solid #1e2d4a;
     border-radius: 14px;
-    padding: 20px 18px;
+    padding: 18px 10px;
     text-align: center;
     transition: border-color 0.3s, transform 0.2s;
+    overflow: hidden;
+    min-height: 90px;
 }
 .metric-card:hover { border-color: #667eea; transform: translateY(-2px); }
 .metric-value {
     font-family: 'Syne', sans-serif;
-    font-size: 1.9rem;
+    font-size: 1.45rem;       /* reduced from 1.9rem to prevent clipping */
     font-weight: 800;
     background: linear-gradient(135deg, #818cf8, #c084fc);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    line-height: 1.2;
+    line-height: 1.3;
+    word-break: break-all;
 }
 .metric-label {
     color: #64748b;
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     margin-top: 6px;
     text-transform: uppercase;
-    letter-spacing: 1.4px;
+    letter-spacing: 1.2px;
     font-weight: 500;
 }
+
 .fraud-alert {
     background: linear-gradient(135deg, #1f0a0a, #2d0f0f);
     border: 1px solid #7f1d1d;
@@ -188,6 +194,27 @@ h1, h2, h3 { font-family: 'Syne', sans-serif !important; }
 
 
 # ══════════════════════════════════════════════════════════════════
+# PLOTLY BASE — no font key here; pass font separately when needed
+# ══════════════════════════════════════════════════════════════════
+PLOTLY_BASE = dict(
+    template="plotly_dark",
+    paper_bgcolor="rgba(13,20,36,0.95)",
+    plot_bgcolor="rgba(0,0,0,0)",
+    font=dict(family="DM Sans", color="#94a3b8"),
+    margin=dict(t=50, b=30, l=20, r=20)
+)
+
+# Variant without font — use when you need to pass font=dict(size=N) separately
+def plotly_base_no_font():
+    return dict(
+        template="plotly_dark",
+        paper_bgcolor="rgba(13,20,36,0.95)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        margin=dict(t=50, b=30, l=20, r=20)
+    )
+
+
+# ══════════════════════════════════════════════════════════════════
 # LOAD ARTIFACTS — ALL FILES IN ROOT FOLDER
 # ══════════════════════════════════════════════════════════════════
 @st.cache_resource
@@ -232,11 +259,11 @@ with st.sidebar:
 
     st.divider()
     st.markdown("**📦 Base Model**")
-    st.caption(f"🧠 Architecture  : 4-Layer ANN")
-    st.caption(f"⚡ Runtime       : TensorFlow / Keras")
+    st.caption("🧠 Architecture  : 4-Layer ANN")
+    st.caption("⚡ Runtime       : TensorFlow / Keras")
     st.caption(f"📊 ROC-AUC       : {metrics['roc_auc']:.4f}")
     st.caption(f"🔢 Features      : {len(FEATURES)}")
-    st.caption(f"📁 Dataset       : PaySim Synthetic")
+    st.caption("📁 Dataset       : PaySim Synthetic")
 
     if "tuned_metrics" in st.session_state:
         st.divider()
@@ -251,15 +278,6 @@ with st.sidebar:
 # ══════════════════════════════════════════════════════════════════
 # HELPERS
 # ══════════════════════════════════════════════════════════════════
-PLOTLY_BASE = dict(
-    template="plotly_dark",
-    paper_bgcolor="rgba(13,20,36,0.95)",
-    plot_bgcolor="rgba(0,0,0,0)",
-    font=dict(family="DM Sans", color="#94a3b8"),
-    margin=dict(t=50, b=30, l=20, r=20)
-)
-
-
 def predict_transaction(amount, old_bal_orig, new_bal_orig,
                         old_bal_dest, new_bal_dest, txn_type):
     feat = np.array([[
@@ -379,8 +397,13 @@ if page == "🏠 Dashboard":
         fig = px.imshow(cm, text_auto=True, color_continuous_scale="Blues",
                         x=["Normal", "Fraud"], y=["Normal", "Fraud"],
                         labels=dict(x="Predicted", y="Actual"))
-        fig.update_layout(title="🎯 Confusion Matrix", height=340,
-                          font=dict(size=14), **PLOTLY_BASE)
+        # FIX: don't pass font= AND **PLOTLY_BASE together — use plotly_base_no_font()
+        fig.update_layout(
+            title="🎯 Confusion Matrix",
+            height=340,
+            font=dict(family="DM Sans", color="#94a3b8", size=14),
+            **plotly_base_no_font()
+        )
         st.plotly_chart(fig, use_container_width=True)
 
     with col2:
@@ -728,7 +751,7 @@ elif page == "⚙️ Hypertune Model":
                     <div class="metric-label">{name}</div>
                     <div style="color:#64748b;font-size:0.78rem;margin:4px 0">
                         Base: <b style="color:#94a3b8">{bv:.4f}</b></div>
-                    <div class="metric-value" style="font-size:1.5rem">{tv:.4f}</div>
+                    <div class="metric-value" style="font-size:1.3rem">{tv:.4f}</div>
                     <div style="font-size:0.8rem;margin-top:4px">{badge}</div>
                 </div>""", unsafe_allow_html=True)
 
@@ -738,15 +761,24 @@ elif page == "⚙️ Hypertune Model":
                 fig = px.imshow(bm["confusion_matrix"], text_auto=True,
                                 x=["Normal", "Fraud"], y=["Normal", "Fraud"],
                                 color_continuous_scale="Blues")
-                fig.update_layout(title="Base Model", height=280,
-                                  font=dict(size=13), **PLOTLY_BASE)
+                # FIX: use plotly_base_no_font() to avoid font key conflict
+                fig.update_layout(
+                    title="Base Model",
+                    height=280,
+                    font=dict(family="DM Sans", color="#94a3b8", size=13),
+                    **plotly_base_no_font()
+                )
                 st.plotly_chart(fig, use_container_width=True)
             with col2:
                 fig = px.imshow(tm["cm"], text_auto=True,
                                 x=["Normal", "Fraud"], y=["Normal", "Fraud"],
                                 color_continuous_scale="Purples")
-                fig.update_layout(title="Tuned Model", height=280,
-                                  font=dict(size=13), **PLOTLY_BASE)
+                fig.update_layout(
+                    title="Tuned Model",
+                    height=280,
+                    font=dict(family="DM Sans", color="#94a3b8", size=13),
+                    **plotly_base_no_font()
+                )
                 st.plotly_chart(fig, use_container_width=True)
 
             cats = ["ROC-AUC", "Precision", "Recall", "F1", "Accuracy"]
@@ -914,15 +946,19 @@ elif page == "📊 Model Analytics":
             for j2 in range(min(d2, 5)):
                 fig.add_shape(
                     type="line",
-                    x0=i, y0=j1 - d1 / 2,
+                    x0=i,     y0=j1 - d1 / 2,
                     x1=i + 1, y1=j2 - d2 / 2,
                     line=dict(color="rgba(100,116,139,0.07)", width=0.8)
                 )
+    # FIX: use plotly_base_no_font() to avoid font key conflict with margin
     fig.update_layout(
-        height=420, title="Neural Network Layer Structure (Base Model)",
+        height=420,
+        title="Neural Network Layer Structure (Base Model)",
         xaxis=dict(showgrid=False, showticklabels=False, zeroline=False),
         yaxis=dict(showgrid=False, showticklabels=False, zeroline=False),
-        margin=dict(t=50, b=80, l=20, r=20), **PLOTLY_BASE
+        font=dict(family="DM Sans", color="#94a3b8"),
+        margin=dict(t=50, b=80, l=20, r=20),
+        **plotly_base_no_font()
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -940,7 +976,7 @@ elif page == "📈 Insights":
     col1, col2 = st.columns(2)
     with col1:
         amounts = np.concatenate([
-            np.random.lognormal(10,  1.5, 2000),
+            np.random.lognormal(10,   1.5, 2000),
             np.random.lognormal(12.5, 1.0, 300)
         ])
         labels = ["Normal"] * 2000 + ["Fraud"] * 300
