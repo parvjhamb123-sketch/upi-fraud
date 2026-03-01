@@ -201,19 +201,25 @@ h1, h2, h3 { font-family: 'Syne', sans-serif !important; }
 # ══════════════════════════════════════════════════════════════════
 @st.cache_resource
 def load_artifacts():
-    model = keras.models.load_model("ann_model.h5", compile=False)
-    scaler = joblib.load("scaler.pkl")
+model   = keras.models.load_model("ann_model.h5", compile=False)
+scaler  = joblib.load("scaler.pkl")
 
-    with open("metrics.json") as f:
-        metrics = json.load(f)
+with open("metrics.json") as f:
+    metrics = json.load(f)
 
-    with open("training_history.json") as f:
-        history = json.load(f)
+with open("training_history.json") as f:
+    history = json.load(f)
 
-    with open("features.json") as f:
-        features = json.load(f)
+with open("features.json") as f:
+    features = json.load(f)
 
-    return model, scaler, metrics, history, features
+return model, scaler, metrics, history, features
+scaler  = joblib.load('scaler.pkl')
+with open('metrics.json')          as f: metrics  = json.load(f)
+with open('training_history.json') as f: history  = json.load(f)
+with open('features.json')         as f: features = json.load(f)
+return session, scaler, metrics, history, features
+
 @st.cache_data
 def load_train_test_data():
 test_npz  = np.load('test_data.npz')
@@ -951,6 +957,5 @@ with c2:
     st.warning("💸 **High-Risk Threshold**\n\nTransactions above ₹2,00,000 show 3× higher fraud probability. Flag for secondary verification.")
 with c3:
     st.error("🔄 **Zero-Balance Pattern**\n\nIf sender balance hits ₹0 after a TRANSFER, fraud probability exceeds 85%. Auto-block recommended.")
-
 
 
