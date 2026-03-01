@@ -950,8 +950,7 @@ elif page == "📊 Model Analytics":
                     x1=i + 1, y1=j2 - d2 / 2,
                     line=dict(color="rgba(100,116,139,0.07)", width=0.8)
                 )
-    # FIX: use plotly_base_no_font() to avoid font key conflict with margin
-   fig.update_layout(
+    fig.update_layout(
         height=420,
         title="Neural Network Layer Structure (Base Model)",
         xaxis=dict(showgrid=False, showticklabels=False, zeroline=False),
@@ -1039,5 +1038,3 @@ elif page == "📈 Insights":
         st.warning("💸 **High-Risk Threshold**\n\nTransactions above ₹2,00,000 show 3× higher fraud probability. Flag for secondary verification.")
     with c3:
         st.error("🔄 **Zero-Balance Pattern**\n\nIf sender balance hits ₹0 after a TRANSFER, fraud probability exceeds 85%. Auto-block recommended.")
-
-
