@@ -1,18 +1,18 @@
-    import streamlit as st
-    import pandas as pd
-    import numpy as np
-    import plotly.graph_objects as go
-    import plotly.express as px
-    from plotly.subplots import make_subplots
-    from sklearn.metrics import (classification_report, confusion_matrix, roc_auc_score)
-    import tensorflow as tf
-    from tensorflow import keras
-    from tensorflow.keras import layers
-    from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
-    import joblib
-    import json
-    import time
-    import os
+import streamlit as st
+import pandas as pd
+import numpy as np
+import plotly.graph_objects as go
+import plotly.express as px
+from plotly.subplots import make_subplots
+from sklearn.metrics import (classification_report, confusion_matrix, roc_auc_score)
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
+import joblib
+import json
+import time
+import os
 
     # ══════════════════════════════════════════════════════════════════
     # PAGE CONFIG
@@ -957,5 +957,6 @@
         st.warning("💸 **High-Risk Threshold**\n\nTransactions above ₹2,00,000 show 3× higher fraud probability. Flag for secondary verification.")
     with c3:
         st.error("🔄 **Zero-Balance Pattern**\n\nIf sender balance hits ₹0 after a TRANSFER, fraud probability exceeds 85%. Auto-block recommended.")
+
 
 
