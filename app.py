@@ -397,8 +397,13 @@ if page == "🏠 Dashboard":
         fig = px.imshow(cm, text_auto=True, color_continuous_scale='Blues',
                         x=['Normal','Fraud'], y=['Normal','Fraud'],
                         labels=dict(x='Predicted', y='Actual'))
-        fig.update_layout(title='🎯 Confusion Matrix', height=340,
-                          font=dict(size=14), **PLOTLY_BASE)
+        fig.update_layout(**PLOTLY_BASE)
+
+fig.update_layout(
+    title='🎯 Confusion Matrix',
+    height=340,
+    font=dict(size=14)
+)
         st.plotly_chart(fig, use_container_width=True)
 
     with col2:
@@ -874,10 +879,15 @@ elif page == "📊 Model Analytics":
             for j2 in range(min(d2,5)):
                 fig.add_shape(type='line',x0=i,y0=j1-d1/2,x1=i+1,y1=j2-d2/2,
                     line=dict(color='rgba(100,116,139,0.07)',width=0.8))
-    fig.update_layout(height=420,title='Neural Network Layer Structure (Base Model)',
-                      xaxis=dict(showgrid=False,showticklabels=False,zeroline=False),
-                      yaxis=dict(showgrid=False,showticklabels=False,zeroline=False),
-                      margin=dict(t=50,b=80,l=20,r=20),**PLOTLY_BASE)
+  fig.update_layout(**PLOTLY_BASE)
+
+fig.update_layout(
+    height=420,
+    title='Neural Network Layer Structure (Base Model)',
+    xaxis=dict(showgrid=False, showticklabels=False, zeroline=False),
+    yaxis=dict(showgrid=False, showticklabels=False, zeroline=False),
+    margin=dict(t=50, b=80, l=20, r=20)
+)
     st.plotly_chart(fig, use_container_width=True)
 
 
@@ -947,4 +957,5 @@ elif page == "📈 Insights":
         st.warning("💸 **High-Risk Threshold**\n\nTransactions above ₹2,00,000 show 3× higher fraud probability. Flag for secondary verification.")
     with c3:
         st.error("🔄 **Zero-Balance Pattern**\n\nIf sender balance hits ₹0 after a TRANSFER, fraud probability exceeds 85%. Auto-block recommended.")
+
 
