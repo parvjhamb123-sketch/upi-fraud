@@ -951,16 +951,17 @@ elif page == "📊 Model Analytics":
                     line=dict(color="rgba(100,116,139,0.07)", width=0.8)
                 )
     # FIX: use plotly_base_no_font() to avoid font key conflict with margin
-    fig.update_layout(
+   fig.update_layout(
         height=420,
         title="Neural Network Layer Structure (Base Model)",
         xaxis=dict(showgrid=False, showticklabels=False, zeroline=False),
         yaxis=dict(showgrid=False, showticklabels=False, zeroline=False),
         font=dict(family="DM Sans", color="#94a3b8"),
         margin=dict(t=50, b=80, l=20, r=20),
-        **plotly_base_no_font()
+        template="plotly_dark",
+        paper_bgcolor="rgba(13,20,36,0.95)",
+        plot_bgcolor="rgba(0,0,0,0)"
     )
-    st.plotly_chart(fig, use_container_width=True)
 
 
 # ══════════════════════════════════════════════════════════════════
@@ -1037,3 +1038,4 @@ elif page == "📈 Insights":
         st.warning("💸 **High-Risk Threshold**\n\nTransactions above ₹2,00,000 show 3× higher fraud probability. Flag for secondary verification.")
     with c3:
         st.error("🔄 **Zero-Balance Pattern**\n\nIf sender balance hits ₹0 after a TRANSFER, fraud probability exceeds 85%. Auto-block recommended.")
+
