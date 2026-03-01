@@ -962,6 +962,7 @@ elif page == "📊 Model Analytics":
         paper_bgcolor="rgba(13,20,36,0.95)",
         plot_bgcolor="rgba(0,0,0,0)"
     )
+    st.plotly_chart(fig, use_container_width=True)
 
 
 # ══════════════════════════════════════════════════════════════════
@@ -1038,4 +1039,5 @@ elif page == "📈 Insights":
         st.warning("💸 **High-Risk Threshold**\n\nTransactions above ₹2,00,000 show 3× higher fraud probability. Flag for secondary verification.")
     with c3:
         st.error("🔄 **Zero-Balance Pattern**\n\nIf sender balance hits ₹0 after a TRANSFER, fraud probability exceeds 85%. Auto-block recommended.")
+
 
